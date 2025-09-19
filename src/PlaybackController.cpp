@@ -1,7 +1,10 @@
 #include "PlaybackController.h"
 #include "LEDController.h"
 #include "SDManager.h"
+#include "DMXSender.h"
+#include "ConfigManager.h"
 
+// Static member initialization
 std::vector<String> PlaybackController::files;
 int PlaybackController::currentIndex = -1;
 PlaybackMode PlaybackController::playbackMode = PLAY_ONCE;
@@ -29,19 +32,21 @@ void PlaybackController::setMode(PlaybackMode mode) {
 }
 
 void PlaybackController::playFile(const String& filename) {
-    // tìm file trong danh sách
     for (size_t i = 0; i < files.size(); i++) {
         if (files[i] == filename) {
             currentIndex = i;
-            loadFile(filename);
-            playing = true;
+            loadFile(files[currentIndex]); // Use the String from the vector
             return;
         }
     }
 }
 
 void PlaybackController::stop() {
-    playing = false;
+    if (playing) {
+        Serial.println("⏹️ Playback stopped.");
+        playing = false;
+        SDManager::closeFile();
+    }
 }
 
 void PlaybackController::next() {
@@ -68,28 +73,69 @@ String PlaybackController::currentFile() {
 }
 
 void PlaybackController::loadFile(const String& filename) {
-    // TODO: mở file từ SD, chuẩn bị đọc frame
-    Serial.printf("▶️ Loading file: %s\n", filename.c_str());
-    lastFrameTime = millis();
+    if (SDManager::openFile(filename.c_str())) {
+        Serial.printf("▶️ Loading file: %s\n", filename.c_str());
+        lastFrameTime = millis();
+        playing = true;
+    } else {
+        Serial.printf("❌ Failed to open file: %s\n", filename.c_str());
+        playing = false;
+    }
 }
 
 void PlaybackController::handlePlayback() {
+    if (!SDManager::isFileOpen()) {
+        stop();
+        return;
+    }
+
     unsigned long now = millis();
-    if (now - lastFrameTime >= 33) { // giả sử 30 FPS
+    if (now - lastFrameTime >= 33) { // ~30 FPS
         lastFrameTime = now;
 
-        // TODO: đọc frame từ SDManager và gửi ra LED
-        // LEDController::showFrame(frameData);
-
-        // TODO: nếu hết file
+        Config cfg = ConfigManager::getConfig();
         bool fileEnded = false;
+
+        // In one "frame", process N universes worth of data from the file
+        for (int i = 0; i < cfg.numDmxUniverses; i++) {
+            // Check if there's enough data for the packet header (universe + length)
+            if (SDManager::available() < 4) {
+                fileEnded = true;
+                break;
+            }
+
+            uint16_t universe, length;
+            SDManager::readData(reinterpret_cast<uint8_t*>(&universe), sizeof(universe));
+            SDManager::readData(reinterpret_cast<uint8_t*>(&length), sizeof(length));
+
+            // Check if the rest of the packet data is available
+            if (SDManager::available() < length) {
+                fileEnded = true;
+                break; // Incomplete frame data
+            }
+
+            uint8_t frameData[512];
+            if (length > sizeof(frameData)) {
+                // Safety check, shouldn't happen with standard DMX
+                fileEnded = true;
+                break;
+            }
+            SDManager::readData(frameData, length);
+
+            // 1. Send packet to the DMX target IP
+            dmxSender.sendPacket(universe, frameData, length);
+
+            // 2. Update local LEDs
+            LEDController::updateFromArtnet(universe, length, frameData);
+        }
+
         if (fileEnded) {
             if (playbackMode == PLAY_ONCE) {
                 stop();
             } else if (playbackMode == LOOP_ONE) {
-                loadFile(files[currentIndex]);
+                loadFile(files[currentIndex]); // Re-load current file
             } else if (playbackMode == LOOP_ALL) {
-                next();
+                next(); // Load next file
             }
         }
     }

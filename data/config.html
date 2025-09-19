@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="UTF-8">
   <title>ESP32 LED Config</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
@@ -17,9 +18,11 @@
       <label>WiFi SSID: <input name="wifiSSID" required></label>
       <label>WiFi Password: <input name="wifiPass" type="password"></label>
       <label>Địa chỉ IP: <input name="localIP"></label>
+      <label>Subnet prefix (CIDR): <input name="subnet" type="number" min="0" max="32" value="24"></label>
       <label>Số output: <input name="outputs" type="number" min="1" max="4"></label>
       <label>LED mỗi output: <input name="ledsPerOutput" type="number" min="1"></label>
       <label>Universe bắt đầu: <input name="startUniverse" type="number" min="0" value="0"></label>
+      <label style="display:inline-flex; align-items: center;"><input name="enableLocalLeds" type="checkbox" style="width:auto; margin-right: 10px;">Bật điều khiển LED cục bộ</label>
       <button type="submit">Lưu cấu hình</button>
     </form>
     <div id="msg"></div>
@@ -36,14 +39,26 @@
   <script>
     // Load config
     fetch('/config').then(r=>r.json()).then(cfg=>{
-      for(let k in cfg) if(document.querySelector(`[name=${k}]`)) document.querySelector(`[name=${k}]`).value = cfg[k];
+      for(const key in cfg) {
+        const el = document.querySelector(`[name=${key}]`);
+        if (el) {
+          if (el.type === 'checkbox') {
+            el.checked = cfg[key];
+          } else {
+            el.value = cfg[key];
+          }
+        }
+      }
     });
     document.getElementById('configForm').onsubmit = function(e){
       e.preventDefault();
       let fd = new FormData(this);
       fetch('/config', {method:'POST', body:fd})
-        .then(r=>r.text()).then(msg=>document.getElementById('msg').innerText=msg);
-    }
+        .then(r=>r.text()).then(msg=>{
+          document.getElementById('msg').innerText = msg;
+          alert('Lưu cấu hình thành công');
+        });
+    };
     // OTA upload
     document.getElementById('otaForm').onsubmit = function(e){
       e.preventDefault();

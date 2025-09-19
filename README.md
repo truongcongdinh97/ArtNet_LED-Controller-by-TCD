@@ -1,61 +1,126 @@
-# ArtNet LED Controller ![Build](https://img.shields.io/badge/build-passing-brightgreen)
+# ArtNet LED Controller by TCD
 
-Điều khiển LED WS2812 qua ArtNet trên ESP32, hỗ trợ ghi phát lại, cấu hình qua WebUI, cập nhật OTA, LCD, encoder và status LED.
+Một bộ điều khiển LED đa năng, chuyên nghiệp dựa trên ESP32, được thiết kế cho các ứng dụng ánh sáng từ đơn giản đến phức tạp.
 
-![demo](docs/demo.gif)
+## Giới thiệu
+
+Dự án này biến một bo mạch ESP32 thành một "bộ não" trung tâm cho hệ thống ánh sáng, có khả năng giao tiếp qua mạng bằng chuẩn Art-Net. Nó có thể nhận tín hiệu từ các phần mềm điều khiển chuyên nghiệp, điều khiển trực tiếp hàng ngàn đèn LED, ghi lại các buổi trình diễn để hoạt động độc lập, và thậm chí chuyển tiếp tín hiệu đến các thiết bị khác trong hệ thống.
 
 ## Tính năng nổi bật
-- Điều khiển LED WS2812 qua ArtNet (ESP32)
-- Ghi & phát lại dữ liệu ArtNet lên thẻ SD
-- WebUI cấu hình WiFi, IP, số lượng LED, OTA firmware
-- Hỗ trợ LCD I2C, encoder, status LED báo mode
-- Hỗ trợ nhiều output LED, playback, streaming, recording
 
-## Sơ đồ chân kết nối (Pinout)
-| Chức năng         | GPIO |
-|-------------------|------|
-| LED OUT 1         | 5    |
-| LED OUT 2         | 18   |
-| LED OUT 3         | 19   |
-| LED OUT 4         | 21   |
-| LCD SDA           | 21   |
-| LCD SCL           | 22   |
-| Encoder A         | 32   |
-| Encoder B         | 33   |
-| Encoder Button    | 25   |
-| Status LED        | 2    |
-| W5500 CS          | 15   |
-| SD Card CS        | 4    |
+- **Điều khiển đa năng:**
+  - **Nhận Art-Net:** Lắng nghe tín hiệu Art-Net và điều khiển trực tiếp các dải LED WS2812B (hoặc tương tự) với thư viện FastLED.
+  - **Gửi Art-Net:** Chuyển tiếp tín hiệu DMX (được đóng gói trong Art-Net) đến một địa chỉ IP khác trong mạng.
+- **Ghi và Phát lại (Record & Playback):**
+  - Ghi lại các luồng Art-Net vào thẻ nhớ SD.
+  - Phát lại các file đã ghi một cách độc lập mà không cần kết nối với máy tính.
+  - Sử dụng cơ chế đệm (buffering) để tối ưu hiệu năng, cho phép ghi nhiều universe một cách mượt mà.
+- **Kết nối mạng linh hoạt:**
+  - Hỗ trợ cả **Ethernet (W5500)** và **Wi-Fi**.
+  - Ưu tiên Ethernet, nếu không thành công sẽ tự động chuyển sang kết nối Wi-Fi đã cấu hình (STA mode).
+  - Nếu cả hai đều thất bại, thiết bị sẽ tự phát ra một mạng Wi-Fi Access Point (`LED_Controller-Setup`) để cấu hình ban đầu.
+- **Cấu hình toàn diện qua Web:**
+  - Giao diện web trực quan để cấu hình mọi thông số.
+  - Cho phép bật/tắt output LED cục bộ, biến thiết bị thành một bộ chuyển đổi/ghi Art-Net thuần túy.
+- **Giao diện vật lý:**
+  - Màn hình LCD và núm xoay (Rotary Encoder) cho phép điều khiển trực tiếp các chế độ hoạt động.
+- **Nâng cấp từ xa (OTA):** Cập nhật firmware của thiết bị qua giao diện web mà không cần kết nối vật lý.
 
-## Cài đặt nhanh
+## Giao diện điều khiển
+
+### 1. Giao diện Web
+
+Truy cập vào địa chỉ IP của thiết bị trên trình duyệt để vào giao diện quản lý.
+
+- **Trang cấu hình chính (`/config.html`):**
+  - Cấu hình Wi-Fi (SSID & Mật khẩu).
+  - Cấu hình mạng (IP tĩnh, Subnet).
+  - Cấu hình LED (Số output, số LED mỗi output, universe bắt đầu).
+  - **Bật/Tắt LED cục bộ:** Cho phép chỉ chuyển tiếp tín hiệu Art-Net mà không điều khiển dải LED được gắn trực tiếp.
+
+- **Trang cấu hình DMX (`/config_dmx.html`):**
+  - Cấu hình cho chức năng gửi Art-Net đi.
+  - **ArtNet IP:** Địa chỉ IP của thiết bị sẽ nhận tín hiệu.
+  - **Số lượng Universe:** Số lượng universe DMX sẽ được gửi đi (tối đa 8).
+  - **Packet Rate:** Tốc độ gửi gói tin (fps).
+
+- **Trang cập nhật OTA (`/update`):**
+  - Dùng để tải lên file firmware `.bin` mới.
+
+### 2. Giao diện LCD & Núm xoay
+
+Menu vật lý cho phép chuyển đổi nhanh giữa các chế độ:
+
+- **Streaming:** Chế độ mặc định, nhận và hiển thị tín hiệu Art-Net theo thời gian thực.
+- **Recording:** Bắt đầu hoặc dừng quá trình ghi dữ liệu Art-Net vào thẻ nhớ.
+- **Playback:** Hiển thị danh sách các file đã ghi, cho phép chọn file để phát lại với các tùy chọn (phát một lần, lặp lại 1 file, lặp lại tất cả).
+
+## Hướng dẫn cài đặt và sử dụng
+
+### Yêu cầu phần cứng
+
+- Bo mạch ESP32.
+- Module Ethernet W5500.
+- Màn hình LCD I2C.
+- Núm xoay (Rotary Encoder).
+- Khe đọc thẻ nhớ SD.
+- Dải LED WS2812B hoặc tương tự.
+
+### Cài đặt và nạp code
+
 ```sh
-git clone https://github.com/truongcongdinh97/ArtNet_LED-Controller.git
-# Mở bằng PlatformIO, build & upload lên ESP32
+# Clone repository
+git clone https://github.com/truongcongdinh97/ArtNet_LED-Controller-by-TCD.git
+cd ArtNet_LED-Controller
+
+# Build firmware
+pio run -e esp32dev
+
+# Nạp firmware và hệ thống file SPIFFS (cho giao diện web)
+pio run -e esp32dev -t uploadfs -t upload
+
+# Mở Serial Monitor để xem log và địa chỉ IP
+pio device monitor -e esp32dev
 ```
 
-## Hướng dẫn sử dụng
-- Khi ESP32 chưa cấu hình WiFi, thiết bị sẽ phát WiFi ở chế độ AP với tên: **LED_Controller-Setup**
-  - Địa chỉ truy cập WebUI: **http://192.168.4.1**
-- Truy cập WebUI để cấu hình WiFi, IP, số lượng LED, OTA firmware
-- Chọn mode (Streaming, Recording, Playback) bằng encoder hoặc WebUI
-- Quan sát status LED để biết trạng thái hoạt động:
-  - Xanh dương: Streaming
-  - Đỏ nhấp nháy: Recording
-  - Xanh lá: Playback
+### Cấu hình lần đầu
 
-## API cấu hình WebUI
-- `GET /api/config` — Lấy cấu hình hiện tại
-- `POST /api/config` — Gửi cấu hình mới (WiFi, IP, outputs, ledsPerOutput)
-- `POST /api/ota` — Cập nhật firmware OTA
+1.  Nạp code và mở Serial Monitor.
+2.  Nếu thiết bị không thể kết nối Ethernet hoặc Wi-Fi đã lưu, nó sẽ tự phát ra một mạng Wi-Fi:
+    - **SSID:** `LED_Controller-Setup`
+    - **Mật khẩu:** `12345678`
+3.  Kết nối máy tính của bạn vào mạng Wi-Fi này.
+4.  Mở trình duyệt và truy cập địa chỉ `http://192.168.4.1`.
+5.  Vào trang cấu hình, nhập thông tin mạng Wi-Fi của bạn và các thông số khác.
+6.  Lưu cấu hình, thiết bị sẽ tự khởi động lại và kết nối vào mạng của bạn.
+7.  Xem lại Serial Monitor để lấy địa chỉ IP mới của thiết bị trong mạng của bạn.
 
-## Đóng góp & License
-MIT License. Đóng góp vui lòng tạo pull request hoặc issue!
+## Sơ đồ chân (Pinout)
 
-## Liên hệ
-- Tác giả: Truong Cong Dinh
-- Email: truongcongdinh97@gmail.com
-- [Github](https://github.com/truongcongdinh97/ArtNet_LED-Controller)
+```c
+// Tham khảo trong src/PinConfig.h
+#define GPIO_LED_OUT_1   5
+#define GPIO_LED_OUT_2   18
+#define GPIO_LED_OUT_3   19
+#define GPIO_LED_OUT_4   21
+#define GPIO_LCD_SDA     21
+#define GPIO_LCD_SCL     22
+#define GPIO_ROTARY_A    32
+#define GPIO_ROTARY_B    33
+#define GPIO_ROTARY_BTN  25
+#define GPIO_STATUS_LED  2
+#define GPIO_W5500_CS    15
+#define GPIO_SD_CS       4
+```
 
----
+## Thư viện chính
 
-> Dự án này sử dụng PlatformIO, FastLED, ESPAsyncWebServer, SD, W5500, LCD I2C, rotary encoder và các thư viện open source khác.
+- [hideakitai/ArtNet](https://github.com/hideakitai/ArtNet)
+- [FastLED](https://github.com/FastLED/FastLED)
+- [ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer)
+- ArduinoJson
+- Và các thư viện chuẩn của PlatformIO (Preferences, SPIFFS, WiFi, Ethernet...)
+
+## License
+
+MIT © 2025 Truong Cong Dinh

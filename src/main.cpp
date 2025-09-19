@@ -1,78 +1,83 @@
 #include <Arduino.h>
+#include <WiFi.h>
+#include <WiFiUdp.h>
+#include <ArtnetWiFi.h>        // Only WiFi-based Art-Net
 #include "ConfigManager.h"
+#include "DMXSender.h"
 #include "LEDController.h"
 #include "SDManager.h"
 #include "MenuManager.h"
 #include "WebUI.h"
-#include "ArtnetHandler.h"
 #include "PlaybackController.h"
 #include "Recording.h"
 
-
+static ArtnetWiFi artnet;
 static OperatingMode lastMode;
 
 void setup() {
     Serial.begin(115200);
     Serial.println("\nSystem starting...");
 
-    // 1. Khởi tạo các module cơ bản
+    // 1. Core modules
     ConfigManager::begin();
     LEDController::begin();
-    
-    // 2. Khởi tạo SD card và các module phụ thuộc
+
+    // 2. SD card
     SDManager::begin();
     if (SDManager::isAvailable()) {
         auto files = SDManager::listFiles("/");
         MenuManager::setFileList(files);
         PlaybackController::setFiles(files);
     }
-    
     Recording::begin();
     PlaybackController::begin();
 
-    // 3. Khởi tạo Mạng và WebUI (luôn chạy)
+    // 3. Network & Web UI
     WebUI::begin();
+    // 3.1 DMX Sender init
+    Config cfg = ConfigManager::getConfig();
+    dmxSender.begin(WebUI::getUDP(), cfg.dmxReceiverIp, cfg.dmxPacketRate);
 
-    // 4. Khởi tạo ArtnetHandler với UDP đã được WebUI chuẩn bị
-    ArtnetHandler::begin(WebUI::getUDP());
+    // 4. Art-Net node over Wi-Fi
+    artnet.begin();
+    artnet.subscribeArtDmx([](const uint8_t* data,
+                              uint16_t size,
+                              const ArtDmxMetadata& metadata,
+                              const ArtNetRemoteInfo& remote) {
+        LEDController::updateFromArtnet(metadata.universe, size, data);
+    });
 
-    // 5. Khởi tạo Menu và LCD
+    // 5. Menu & LCD
     MenuManager::begin();
     lastMode = MenuManager::getMode();
 }
 
 void loop() {
-    // Luôn chạy các module nền
     MenuManager::loop();
     WebUI::loop();
 
-    OperatingMode currentMode = MenuManager::getMode();
+    auto currentMode = MenuManager::getMode();
 
-    // Xử lý logic theo từng mode
-    switch (currentMode) {
-        case MODE_STREAMING:
-            ArtnetHandler::loop();
-            break;
-        case MODE_RECORDING:
-            ArtnetHandler::loop(); // Cần nhận Art-Net để ghi
-            break;
-        case MODE_PLAYBACK:
-            PlaybackController::loop();
-            break;
+    if (currentMode == MODE_STREAMING || currentMode == MODE_RECORDING) {
+        artnet.parse();
     }
 
-    // Xử lý khi chuyển mode
+    if (currentMode == MODE_PLAYBACK) {
+        PlaybackController::loop();
+    }
+
     if (currentMode != lastMode) {
         if (currentMode == MODE_RECORDING) {
-            ArtnetHandler::setDmxPacketCallback(Recording::recordPacket);
-        } else if (lastMode == MODE_RECORDING) {
-            ArtnetHandler::setDmxPacketCallback(nullptr);
+            artnet.subscribeArtDmx([](const uint8_t* data,
+                                      uint16_t size,
+                                      const ArtDmxMetadata& metadata,
+                                      const ArtNetRemoteInfo&) {
+                Recording::recordPacket(metadata.universe, size, data);
+            });
         }
-        
         if (currentMode != MODE_PLAYBACK && lastMode == MODE_PLAYBACK) {
             PlaybackController::stop();
         }
-        
         lastMode = currentMode;
     }
 }

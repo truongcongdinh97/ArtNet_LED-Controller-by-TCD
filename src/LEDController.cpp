@@ -1,6 +1,8 @@
 #include "LEDController.h"
 #include <FastLED.h>
 #include "PinConfig.h"
+#include "ConfigManager.h"
+#include <math.h>
 
 // Tối đa 4 outputs, mỗi output 680 LED
 #define MAX_OUTPUTS 4
@@ -19,14 +21,15 @@ void LEDController::begin() {
 }
 
 void LEDController::loop() {
-  FastLED.show();
+  Config cfg = ConfigManager::getConfig();
+  if (cfg.enableLocalLeds) {
+    FastLED.show();
+  }
 }
 
 // Mapping động: mỗi output có thể dùng nhiều universe, không cố định +4
 // Số universe/output = ceil(ledsPerOutput*3/512)
-#include "ConfigManager.h"
-#include <math.h>
-void LEDController::updateFromArtnet(uint16_t universe, uint16_t length, uint8_t* data) {
+void LEDController::updateFromArtnet(uint16_t universe, uint16_t length, const uint8_t* data) {
   Config cfg = ConfigManager::getConfig();
   int outputs = cfg.outputs;
   int ledsPerOutput = cfg.ledsPerOutput;

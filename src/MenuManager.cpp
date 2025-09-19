@@ -1,4 +1,3 @@
-
 #include "MenuManager.h"
 #include <LiquidCrystal_I2C.h>
 #include <AiEsp32RotaryEncoder.h>
@@ -97,6 +96,7 @@ uint32_t MenuManager::getRecordMillis() { return recordActive ? (millis() - reco
 uint32_t MenuManager::getPlaybackMillis() { return playbackActive ? (millis() - playbackStartMillis) : 0; }
 void MenuManager::resetPlaybackMillis() { playbackStartMillis = millis(); }
 
+// New menu structure implementation
 void MenuManager::loop() {
     if (encoder.encoderChanged()) {
         if (menuLevel == 0) {
