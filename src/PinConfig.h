@@ -1,39 +1,83 @@
 #pragma once
 
+// ================================================================================================
+// GPIO PIN CONFIGURATION FOR ARTNET LED CONTROLLER
+// ================================================================================================
 // Định nghĩa các chân GPIO sử dụng cho toàn bộ dự án
 // Sửa đổi tại đây sẽ đồng bộ cho tất cả các module
+//
+// ⚠️  QUAN TRỌNG: Không được trùng lặp GPIO giữa các chức năng khác nhau
+// ⚠️  ESP32 có một số chân có giới hạn đặc biệt, vui lòng tham khảo datasheet
+// ================================================================================================
 
-// LED Outputs
+// I2S (MAX98357) - Dự phòng cho tương lai
+// Các chân I2S chuyên dụng cho âm thanh (hiện chưa sử dụng)
+#define GPIO_I2S_BCLK    26  // I2S bit clock
+#define GPIO_I2S_LRCK    25  // I2S word select (left/right channel)
+#define GPIO_I2S_DATA    27  // I2S data out
+
+// LED Outputs - FastLED WS2812B/WS2811
+// Hỗ trợ tối đa 4 output, mỗi output có thể điều khiển 680 LED
 #define GPIO_LED_OUT_1   5
-#define GPIO_LED_OUT_2   18
-#define GPIO_LED_OUT_3   19
-#define GPIO_LED_OUT_4   21
+#define GPIO_LED_OUT_2   14
+#define GPIO_LED_OUT_3   12  // Thay thế cho GPIO 27 (để dành cho I2S)
+#define GPIO_LED_OUT_4   13  // Thay thế cho GPIO 26 (để dành cho I2S)
 
-// LCD I2C
-#define GPIO_LCD_SDA     21
-#define GPIO_LCD_SCL     22
+// LCD I2C (20x4 Character Display)
+// Sử dụng chân I2C chuẩn của ESP32
+#define GPIO_LCD_SDA     21  // I2C data line (cố định)
+#define GPIO_LCD_SCL     22  // I2C clock line (cố định)
 
-// Rotary Encoder
-#define GPIO_ROTARY_A    32
-#define GPIO_ROTARY_B    33
-#define GPIO_ROTARY_BTN  25
+// Rotary Encoder với nút nhấn
+// Cho phép điều khiển menu và chọn chế độ hoạt động
+#define GPIO_ROTARY_A    32  // Encoder channel A 
+#define GPIO_ROTARY_B    33  // Encoder channel B
+#define GPIO_ROTARY_BTN  4   // Encoder push button - Thay thế cho GPIO 25 (để dành cho I2S)
 
 // Status LED
+// LED đơn hiển thị trạng thái hoạt động (xanh=streaming, đỏ=recording, v.v.)
 #define GPIO_STATUS_LED  2
 
+// W5500 Ethernet Module (SPI Interface)
+// Kết nối mạng chính, ưu tiên cao hơn WiFi
+#define GPIO_W5500_MOSI  23  // SPI Master Out Slave In
+#define GPIO_W5500_MISO  19  // SPI Master In Slave Out  
+#define GPIO_W5500_SCK   18  // SPI Clock
+#define GPIO_W5500_CS    15  // Chip Select (riêng biệt)
+#define GPIO_W5500_RST   16  // Reset pin - Thay thế cho GPIO 12 (tránh xung đột)
 
-// W5500 Ethernet (SPI)
-#define GPIO_W5500_MOSI   23
-#define GPIO_W5500_MISO   19
-#define GPIO_W5500_SCK    18
-#define GPIO_W5500_CS     15
-#define GPIO_W5500_RST    12
+// SD Card Module (SPI Interface)
+// Chia sẻ bus SPI với Ethernet, chỉ khác CS
+#define GPIO_SD_MOSI     23  // Chia sẻ với Ethernet
+#define GPIO_SD_MISO     19  // Chia sẻ với Ethernet  
+#define GPIO_SD_SCK      18  // Chia sẻ với Ethernet
+#define GPIO_SD_CS       17  // Chip Select riêng biệt cho SD Card
 
-// SD Card (nếu dùng SPI)
-#define GPIO_SD_MOSI      23
-#define GPIO_SD_MISO      19
-#define GPIO_SD_SCK       18
-#define GPIO_SD_CS        4
+// ================================================================================================
+// BẢNG TỔNG KẾT SỬ DỤNG GPIO
+// ================================================================================================
+// GPIO  | Chức năng        | Module           | Lưu ý
+// ------|------------------|------------------|------------------------------------------
+// 2     | Status LED       | StatusLED        | LED hiển thị trạng thái
+// 4     | Button           | RotaryEncoder    | Nút nhấn encoder
+// 5     | LED Output 1     | FastLED          | WS2812B data pin
+// 12    | LED Output 3     | FastLED          | WS2812B data pin
+// 13    | LED Output 4     | FastLED          | WS2812B data pin  
+// 14    | LED Output 2     | FastLED          | WS2812B data pin
+// 15    | W5500 CS         | Ethernet         | SPI Chip Select
+// 16    | W5500 RST        | Ethernet         | Reset W5500
+// 17    | SD Card CS       | SD Manager       | SPI Chip Select
+// 18    | SPI SCK          | Ethernet + SD    | Chia sẻ SPI clock
+// 19    | SPI MISO         | Ethernet + SD    | Chia sẻ SPI MISO
+// 21    | I2C SDA          | LCD              | I2C data line
+// 22    | I2C SCL          | LCD              | I2C clock line
+// 23    | SPI MOSI         | Ethernet + SD    | Chia sẻ SPI MOSI
+// 25    | I2S LRCK         | MAX98357 (dự phòng) | Audio left/right
+// 26    | I2S BCLK         | MAX98357 (dự phòng) | Audio bit clock
+// 27    | I2S DATA         | MAX98357 (dự phòng) | Audio data out
+// 32    | Encoder A        | RotaryEncoder    | Channel A
+// 33    | Encoder B        | RotaryEncoder    | Channel B
+// ================================================================================================
 
 // Các module khác có thể bổ sung tại đây
 

@@ -99,18 +99,41 @@ pio device monitor -e esp32dev
 
 ```c
 // Tham khảo trong src/PinConfig.h
+// I2S (MAX98357) - Dự phòng cho tương lai
+#define GPIO_I2S_BCLK    26
+#define GPIO_I2S_LRCK    25  
+#define GPIO_I2S_DATA    27
+
+// LED Outputs
 #define GPIO_LED_OUT_1   5
-#define GPIO_LED_OUT_2   18
-#define GPIO_LED_OUT_3   19
-#define GPIO_LED_OUT_4   21
+#define GPIO_LED_OUT_2   14
+#define GPIO_LED_OUT_3   12  // Thay thế cho GPIO 27
+#define GPIO_LED_OUT_4   13  // Thay thế cho GPIO 26
+
+// LCD I2C
 #define GPIO_LCD_SDA     21
 #define GPIO_LCD_SCL     22
+
+// Rotary Encoder
 #define GPIO_ROTARY_A    32
 #define GPIO_ROTARY_B    33
-#define GPIO_ROTARY_BTN  25
+#define GPIO_ROTARY_BTN  4   // Thay thế cho GPIO 25
+
+// Status LED
 #define GPIO_STATUS_LED  2
+
+// W5500 Ethernet (SPI)
+#define GPIO_W5500_MOSI  23
+#define GPIO_W5500_MISO  19
+#define GPIO_W5500_SCK   18
 #define GPIO_W5500_CS    15
-#define GPIO_SD_CS       4
+#define GPIO_W5500_RST   16  // Thay thế cho GPIO 12
+
+// SD Card (SPI) - Chia sẻ với Ethernet
+#define GPIO_SD_MOSI     23  // Chia sẻ với Ethernet
+#define GPIO_SD_MISO     19  // Chia sẻ với Ethernet
+#define GPIO_SD_SCK      18  // Chia sẻ với Ethernet
+#define GPIO_SD_CS       17  // Chân chọn chip riêng
 ```
 
 ## Thư viện chính

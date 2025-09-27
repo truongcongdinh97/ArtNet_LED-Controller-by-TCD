@@ -1,5 +1,6 @@
 #include "SDManager.h"
 #include <SD.h>
+#include "PinConfig.h"
 
 // Static variables to manage the active file and SD card state.
 static File activeFile;
@@ -7,7 +8,7 @@ static bool sdAvailable = false;
 
 // Initializes the SD card.
 void SDManager::begin() {
-  if (!SD.begin()) {
+  if (!SD.begin(GPIO_SD_CS)) {
     Serial.println("SD init failed!");
     sdAvailable = false;
     return;
