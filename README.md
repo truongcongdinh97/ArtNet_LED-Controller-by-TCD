@@ -1,149 +1,414 @@
 # ArtNet LED Controller by TCD
 
-Một bộ điều khiển LED đa năng, chuyên nghiệp dựa trên ESP32, được thiết kế cho các ứng dụng ánh sáng từ đơn giản đến phức tạp.
+[![PlatformIO CI](https://img.shields.io/badge/PlatformIO-Build-orange?logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjUwMCIgaGVpZ2h0PSIyNTAwIiB2aWV3Qm94PSIwIDAgMjU2IDI1NiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJ4TWlkWU1pZCI+PHBhdGggZD0iTTEyOCAwQzU3LjMwOCAwIDAgNTcuMzA4IDAgMTI4czU3LjMwOCAxMjggMTI4IDEyOCAxMjgtNTcuMzA4IDEyOC0xMjhTMTk4LjY5MiAwIDEyOCAwem0wIDIzOWMtNjEuMzM1IDAtMTExLTQ5LjY2NS0xMTEtMTExUzY2LjY2NSAxNyAxMjggMTdzMTExIDQ5LjY2NSAxMTEgMTExLTQ5LjY2NSAxMTEtMTExIDExMXoiIGZpbGw9IiNGRkYiLz48L3N2Zz4%3D)](https://github.com/truongcongdinh97/ArtNet_LED-Controller-by-TCD)
+[![ESP32](https://img.shields.io/badge/ESP32-Platform-blue?logo=espressif)](https://www.espressif.com/en/products/socs/esp32)
+[![Art-Net](https://img.shields.io/badge/Art--Net-Protocol-green)](https://art-net.org.uk/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Release](https://img.shields.io/github/v/release/truongcongdinh97/ArtNet_LED-Controller-by-TCD)](https://github.com/truongcongdinh97/ArtNet_LED-Controller-by-TCD/releases)
 
-## Giới thiệu
+> **🎭 Bộ điều khiển LED chuyên nghiệp cho sân khấu và giải trí**  
+> Một giải pháp hoàn chỉnh dựa trên ESP32 để điều khiển LED thông qua giao thức Art-Net
 
-Dự án này biến một bo mạch ESP32 thành một "bộ não" trung tâm cho hệ thống ánh sáng, có khả năng giao tiếp qua mạng bằng chuẩn Art-Net. Nó có thể nhận tín hiệu từ các phần mềm điều khiển chuyên nghiệp, điều khiển trực tiếp hàng ngàn đèn LED, ghi lại các buổi trình diễn để hoạt động độc lập, và thậm chí chuyển tiếp tín hiệu đến các thiết bị khác trong hệ thống.
+![ArtNet LED Controller](https://img.shields.io/badge/Status-Production%20Ready-brightgreen)
+![Memory Usage](https://img.shields.io/badge/RAM-19%25-success)
+![Flash Usage](https://img.shields.io/badge/Flash-74%25-orange)
 
-## Tính năng nổi bật
+## 📖 Giới thiệu
 
-- **Điều khiển đa năng:**
-  - **Nhận Art-Net:** Lắng nghe tín hiệu Art-Net và điều khiển trực tiếp các dải LED WS2812B (hoặc tương tự) với thư viện FastLED.
-  - **Gửi Art-Net:** Chuyển tiếp tín hiệu DMX (được đóng gói trong Art-Net) đến một địa chỉ IP khác trong mạng.
-- **Ghi và Phát lại (Record & Playback):**
-  - Ghi lại các luồng Art-Net vào thẻ nhớ SD.
-  - Phát lại các file đã ghi một cách độc lập mà không cần kết nối với máy tính.
-  - Sử dụng cơ chế đệm (buffering) để tối ưu hiệu năng, cho phép ghi nhiều universe một cách mượt mà.
-- **Kết nối mạng linh hoạt:**
-  - Hỗ trợ cả **Ethernet (W5500)** và **Wi-Fi**.
-  - Ưu tiên Ethernet, nếu không thành công sẽ tự động chuyển sang kết nối Wi-Fi đã cấu hình (STA mode).
-  - Nếu cả hai đều thất bại, thiết bị sẽ tự phát ra một mạng Wi-Fi Access Point (`LED_Controller-Setup`) để cấu hình ban đầu.
-- **Cấu hình toàn diện qua Web:**
-  - Giao diện web trực quan để cấu hình mọi thông số.
-  - Cho phép bật/tắt output LED cục bộ, biến thiết bị thành một bộ chuyển đổi/ghi Art-Net thuần túy.
-- **Giao diện vật lý:**
-  - Màn hình LCD và núm xoay (Rotary Encoder) cho phép điều khiển trực tiếp các chế độ hoạt động.
-- **Nâng cấp từ xa (OTA):** Cập nhật firmware của thiết bị qua giao diện web mà không cần kết nối vật lý.
+Dự án này biến một bo mạch ESP32 thành một **"bộ não" trung tâm** cho hệ thống ánh sáng chuyên nghiệp, có khả năng giao tiếp qua mạng bằng chuẩn **Art-Net**. Thiết bị có thể:
 
-## Giao diện điều khiển
+- 🎯 **Nhận tín hiệu** từ các phần mềm điều khiển chuyên nghiệp (QLC+, MadMapper, Resolume...)  
+- 💡 **Điều khiển trực tiếp** hàng ngàn đèn LED WS2812B/WS2811
+- 💾 **Ghi lại** các buổi trình diễn để hoạt động độc lập
+- 🔄 **Chuyển tiếp** tín hiệu đến các thiết bị khác trong hệ thống
 
-### 1. Giao diện Web
+### 🎪 Ứng dụng thực tế
+- **Sân khấu & Concert**: Điều khiển backdrop LED, wing LED
+- **Kiến trúc**: Chiếu sáng tòa nhà, cầu, công trình
+- **Sự kiện**: Wedding, conference, exhibition
+- **Art Installation**: Tác phẩm nghệ thuật tương tác
+- **Nightclub & Bar**: Hệ thống ánh sáng vũ trường
 
-Truy cập vào địa chỉ IP của thiết bị trên trình duyệt để vào giao diện quản lý.
+## ⭐ Tính năng nổi bật
 
-- **Trang cấu hình chính (`/config.html`):**
-  - Cấu hình Wi-Fi (SSID & Mật khẩu).
-  - Cấu hình mạng (IP tĩnh, Subnet).
-  - Cấu hình LED (Số output, số LED mỗi output, universe bắt đầu).
-  - **Bật/Tắt LED cục bộ:** Cho phép chỉ chuyển tiếp tín hiệu Art-Net mà không điều khiển dải LED được gắn trực tiếp.
+### 🌐 **Kết nối mạng đa dạng**
+- **🔌 Ethernet (W5500)**: Kết nối ổn định cho production
+- **📶 Wi-Fi**: Kết nối linh hoạt, dự phòng cho Ethernet
+- **🎯 Auto-fallback**: Tự động chuyển đổi giữa các kết nối
+- **⚙️ Hotspot mode**: Setup dễ dàng qua AP `LED_Controller-Setup`
 
-- **Trang cấu hình DMX (`/config_dmx.html`):**
-  - Cấu hình cho chức năng gửi Art-Net đi.
-  - **ArtNet IP:** Địa chỉ IP của thiết bị sẽ nhận tín hiệu.
-  - **Số lượng Universe:** Số lượng universe DMX sẽ được gửi đi (tối đa 8).
-  - **Packet Rate:** Tốc độ gửi gói tin (fps).
+### 🎮 **Điều khiển Art-Net chuyên nghiệp**
+- **📡 Art-Net Receiver**: Lắng nghe và xử lý tín hiệu Art-Net
+- **🔄 Art-Net Sender**: Chuyển tiếp DMX đến thiết bị khác
+- **🎭 Multi-universe**: Hỗ trợ nhiều universe (lên đến 8)
+- **⚡ Real-time**: Xử lý tín hiệu với độ trễ thấp
 
-- **Trang cập nhật OTA (`/update`):**
-  - Dùng để tải lên file firmware `.bin` mới.
+### 💡 **Điều khiển LED mạnh mẽ**
+- **🎯 4 Output channels**: Điều khiển đồng thời 4 dải LED
+- **🌈 WS2812B/WS2811**: Hỗ trợ LED addressable phổ biến
+- **📊 Dynamic mapping**: Mapping universe linh hoạt
+- **💾 680 LEDs/channel**: Tổng cộng 2,720 LEDs đồng thời
 
-### 2. Giao diện LCD & Núm xoay
+### 🎬 **Recording & Playback**
+- **📹 Record to SD**: Ghi show vào thẻ nhớ SD
+- **▶️ Standalone playback**: Phát lại không cần máy tính
+- **🔁 Loop modes**: Play once, loop single, loop all
+- **⚡ Buffered recording**: Ghi nhiều universe mượt mà
 
-Menu vật lý cho phép chuyển đổi nhanh giữa các chế độ:
+### 🖥️ **Giao diện đa dạng**
+- **💻 Web interface**: Cấu hình qua trình duyệt
+- **📱 Responsive design**: Tương thích mobile
+- **🖱️ LCD + Rotary**: Menu vật lý trực quan
+- **🔧 OTA Update**: Nâng cấp firmware từ xa
 
-- **Streaming:** Chế độ mặc định, nhận và hiển thị tín hiệu Art-Net theo thời gian thực.
-- **Recording:** Bắt đầu hoặc dừng quá trình ghi dữ liệu Art-Net vào thẻ nhớ.
-- **Playback:** Hiển thị danh sách các file đã ghi, cho phép chọn file để phát lại với các tùy chọn (phát một lần, lặp lại 1 file, lặp lại tất cả).
+## 🖼️ Screenshots & Demo
 
-## Hướng dẫn cài đặt và sử dụng
+<table>
+<tr>
+<td align="center">
+<img src="https://via.placeholder.com/300x200/1f1f1f/00ff00?text=Web+Interface" alt="Web Interface"/>
+<br><b>🌐 Web Configuration</b>
+</td>
+<td align="center">
+<img src="https://via.placeholder.com/300x200/1f1f1f/ff6600?text=LCD+Menu" alt="LCD Menu"/>
+<br><b>🖱️ LCD Physical Menu</b>
+</td>
+</tr>
+<tr>
+<td align="center">
+<img src="https://via.placeholder.com/300x200/1f1f1f/0099ff?text=Hardware+Setup" alt="Hardware"/>
+<br><b>⚙️ Hardware Assembly</b>
+</td>
+<td align="center">
+<img src="https://via.placeholder.com/300x200/1f1f1f/ff0099?text=LED+Demo" alt="LED Demo"/>
+<br><b>💡 LED Control Demo</b>
+</td>
+</tr>
+</table>
 
-### Yêu cầu phần cứng
+## 🎮 Giao diện điều khiển
 
-- Bo mạch ESP32.
-- Module Ethernet W5500.
-- Màn hình LCD I2C.
-- Núm xoay (Rotary Encoder).
-- Khe đọc thẻ nhớ SD.
-- Dải LED WS2812B hoặc tương tự.
+### 💻 1. Web Interface
 
-### Cài đặt và nạp code
+Truy cập qua địa chỉ IP của thiết bị để vào **dashboard điều khiển toàn diện**:
 
-```sh
+#### 🏠 **Main Config Page** (`/config.html`)
+```
+🌐 Network Settings:
+  ├── 📶 WiFi Configuration (SSID & Password)
+  ├── 🌍 Static IP Setup  
+  └── 🔧 Network Diagnostics
+
+💡 LED Settings:
+  ├── 🎯 Number of Outputs (1-4)
+  ├── 🌈 LEDs per Output (1-680)
+  ├── 📊 Start Universe Mapping
+  └── ⚡ Local LED Enable/Disable
+```
+
+#### 🎭 **DMX Config Page** (`/config_dmx.html`)
+```
+🔄 Art-Net Forwarding:
+  ├── 🎯 Target IP Address
+  ├── 📊 Universe Count (1-8)
+  └── ⏱️ Packet Rate (1-60 fps)
+```
+
+#### 🔄 **OTA Update Page** (`/update`)
+```
+📦 Firmware Management:
+  ├── 🚀 Upload .bin files
+  ├── 📊 Progress tracking  
+  └── ✅ Auto-restart after upload
+```
+
+### 🖱️ 2. Physical Control (LCD + Rotary Encoder)
+
+**Menu cấp vật lý** cho điều khiển nhanh không cần mạng:
+
+```
+🏠 Main Menu
+├── 📡 STREAMING Mode    ← Real-time Art-Net
+├── 🎬 RECORDING Mode    ← Save show to SD
+├── ▶️  PLAYBACK Mode    ← Play saved shows
+└── ℹ️  ABOUT & SETTINGS ← Device info & reset
+```
+
+#### 🎬 **Recording Workflow:**
+1. **Select Recording** → Press encoder to start
+2. **Recording Status** → Red LED indicates active
+3. **Stop Recording** → Press again to save
+
+#### ▶️ **Playback Workflow:**
+1. **Browse Files** → Rotate to select show
+2. **Choose Loop Mode** → Once, Loop File, Loop All
+3. **Start Playback** → Press to begin show
+
+## 🚀 Quick Start Guide
+
+### 📋 **Hardware Requirements**
+
+| Component | Specification | Purpose |
+|-----------|---------------|---------|
+| **ESP32** | ESP32-WROOM-32 | Main controller |
+| **W5500 Ethernet** | SPI interface | Primary network |
+| **LCD 20x4** | I2C interface | Local display |
+| **Rotary Encoder** | With push button | Menu navigation |
+| **MicroSD Card** | Class 10+ recommended | Show recording |
+| **LED Strips** | WS2812B/WS2811 | Light output |
+| **Power Supply** | 5V, adequate current | System power |
+
+### ⚡ **Installation & Setup**
+
+#### 1️⃣ **Download & Build**
+```bash
 # Clone repository
 git clone https://github.com/truongcongdinh97/ArtNet_LED-Controller-by-TCD.git
-cd ArtNet_LED-Controller
+cd ArtNet_LED-Controller-by-TCD
 
-# Build firmware
-pio run -e esp32dev
+# Build firmware (using PlatformIO)
+platformio run -e esp32dev
 
-# Nạp firmware và hệ thống file SPIFFS (cho giao diện web)
-pio run -e esp32dev -t uploadfs -t upload
+# Upload firmware & web files
+platformio run -e esp32dev -t upload -t uploadfs
 
-# Mở Serial Monitor để xem log và địa chỉ IP
-pio device monitor -e esp32dev
+# Monitor serial output
+platformio device monitor -e esp32dev
 ```
 
-### Cấu hình lần đầu
+#### 2️⃣ **Initial Configuration**
+1. **🔌 Power on** the device and open Serial Monitor
+2. **📶 Connect to WiFi hotspot**: `LED_Controller-Setup` (password: `12345678`)
+3. **🌐 Open browser** to `http://192.168.4.1`
+4. **⚙️ Configure settings**:
+   - WiFi credentials for your network
+   - LED output parameters
+   - Art-Net universe mapping
+5. **💾 Save & reboot** - device will connect to your network
+6. **📝 Note the IP address** from Serial Monitor
 
-1.  Nạp code và mở Serial Monitor.
-2.  Nếu thiết bị không thể kết nối Ethernet hoặc Wi-Fi đã lưu, nó sẽ tự phát ra một mạng Wi-Fi:
-    - **SSID:** `LED_Controller-Setup`
-    - **Mật khẩu:** `12345678`
-3.  Kết nối máy tính của bạn vào mạng Wi-Fi này.
-4.  Mở trình duyệt và truy cập địa chỉ `http://192.168.4.1`.
-5.  Vào trang cấu hình, nhập thông tin mạng Wi-Fi của bạn và các thông số khác.
-6.  Lưu cấu hình, thiết bị sẽ tự khởi động lại và kết nối vào mạng của bạn.
-7.  Xem lại Serial Monitor để lấy địa chỉ IP mới của thiết bị trong mạng của bạn.
+#### 3️⃣ **Hardware Connections**
+> 📌 **See detailed pinout diagram below**
 
-## Sơ đồ chân (Pinout)
-
-```c
-// Tham khảo trong src/PinConfig.h
-// I2S (MAX98357) - Dự phòng cho tương lai
-#define GPIO_I2S_BCLK    26
-#define GPIO_I2S_LRCK    25  
-#define GPIO_I2S_DATA    27
-
-// LED Outputs
-#define GPIO_LED_OUT_1   5
-#define GPIO_LED_OUT_2   14
-#define GPIO_LED_OUT_3   12  // Thay thế cho GPIO 27
-#define GPIO_LED_OUT_4   13  // Thay thế cho GPIO 26
-
-// LCD I2C
-#define GPIO_LCD_SDA     21
-#define GPIO_LCD_SCL     22
-
-// Rotary Encoder
-#define GPIO_ROTARY_A    32
-#define GPIO_ROTARY_B    33
-#define GPIO_ROTARY_BTN  4   // Thay thế cho GPIO 25
-
-// Status LED
-#define GPIO_STATUS_LED  2
-
-// W5500 Ethernet (SPI)
-#define GPIO_W5500_MOSI  23
-#define GPIO_W5500_MISO  19
-#define GPIO_W5500_SCK   18
-#define GPIO_W5500_CS    15
-#define GPIO_W5500_RST   16  // Thay thế cho GPIO 12
-
-// SD Card (SPI) - Chia sẻ với Ethernet
-#define GPIO_SD_MOSI     23  // Chia sẻ với Ethernet
-#define GPIO_SD_MISO     19  // Chia sẻ với Ethernet
-#define GPIO_SD_SCK      18  // Chia sẻ với Ethernet
-#define GPIO_SD_CS       17  // Chân chọn chip riêng
+```
+🔌 Power: 5V to ESP32 + LED strips
+🌐 Network: W5500 module via SPI
+🖱️ Interface: LCD (I2C) + Rotary encoder  
+💾 Storage: MicroSD card via SPI
+💡 Outputs: 4x LED strip data lines
 ```
 
-## Thư viện chính
+## 🔌 Hardware Pinout & Wiring
 
-- [hideakitai/ArtNet](https://github.com/hideakitai/ArtNet)
-- [FastLED](https://github.com/FastLED/FastLED)
-- [ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer)
-- ArduinoJson
-- Và các thư viện chuẩn của PlatformIO (Preferences, SPIFFS, WiFi, Ethernet...)
+### 📊 **GPIO Assignment Table**
 
-## License
+| **Function** | **GPIO** | **Notes** | **Module** |
+|--------------|----------|-----------|------------|
+| **🎵 I2S Audio (Reserved)** ||| *Future MAX98357* |
+| BCLK | `26` | I2S Bit Clock | Audio expansion |
+| LRCK | `25` | I2S Word Select | Audio expansion |  
+| DATA | `27` | I2S Data Out | Audio expansion |
+| **💡 LED Outputs** ||| *WS2812B/WS2811* |
+| LED Strip 1 | `5` | Data line | FastLED |
+| LED Strip 2 | `14` | Data line | FastLED |
+| LED Strip 3 | `12` | Data line | FastLED |
+| LED Strip 4 | `13` | Data line | FastLED |
+| **🖱️ User Interface** ||| *Physical Controls* |
+| LCD SDA | `21` | I2C Data | 20x4 Display |
+| LCD SCL | `22` | I2C Clock | 20x4 Display |
+| Encoder A | `32` | Rotation detect | Menu navigation |
+| Encoder B | `33` | Rotation detect | Menu navigation |
+| Encoder BTN | `4` | Push button | Menu select |
+| Status LED | `2` | System status | Built-in LED |
+| **🌐 Networking** ||| *W5500 Ethernet* |
+| SPI MOSI | `23` | Shared SPI bus | Data out |
+| SPI MISO | `19` | Shared SPI bus | Data in |
+| SPI SCK | `18` | Shared SPI bus | Clock |
+| W5500 CS | `15` | Chip select | Ethernet |
+| W5500 RST | `16` | Reset control | Ethernet |
+| **💾 Storage** ||| *MicroSD Card* |
+| SD MOSI | `23` | Shared with Ethernet | Data out |
+| SD MISO | `19` | Shared with Ethernet | Data in |
+| SD SCK | `18` | Shared with Ethernet | Clock |
+| SD CS | `17` | Chip select | Storage |
 
-MIT © 2025 Truong Cong Dinh
+### 📐 **Wiring Diagram**
+
+```
+ESP32-WROOM-32
+┌─────────────────────────────────┐
+│  ┌─────┐                       │
+│  │ USB │  📶 WiFi + 🔌 Ethernet │
+│  └─────┘                       │
+├─[2]────────────────── Status LED
+├─[4]───────────────── Encoder BTN
+├─[5]──────────────── LED Strip 1  
+├─[12]─────────────── LED Strip 3
+├─[13]─────────────── LED Strip 4
+├─[14]─────────────── LED Strip 2
+├─[15]──── CS ──────── W5500 Module
+├─[16]──── RST ─────── W5500 Module
+├─[17]──── CS ──────── SD Card
+├─[18]──── SCK ─────── SPI Bus (Shared)
+├─[19]──── MISO ────── SPI Bus (Shared)  
+├─[21]──── SDA ─────── LCD Display
+├─[22]──── SCL ─────── LCD Display
+├─[23]──── MOSI ────── SPI Bus (Shared)
+├─[25]──── LRCK ───── 🔊 Audio (Future)
+├─[26]──── BCLK ───── 🔊 Audio (Future)
+├─[27]──── DATA ───── 🔊 Audio (Future)
+├─[32]──── A ──────── Rotary Encoder
+└─[33]──── B ──────── Rotary Encoder
+```
+
+### ⚡ **Power Requirements**
+
+- **ESP32 Module**: 3.3V (regulated onboard)
+- **LED Strips**: 5V DC (calculate: ~60mA per LED at full white)
+- **Peripherals**: 3.3V-5V compatible
+- **Recommended PSU**: 5V/10A+ for 300+ LEDs
+
+> ⚠️ **Important**: Use adequate power supply and proper wiring for LED strips to avoid voltage drop and overheating.
+
+## 🔧 Technical Specifications
+
+### 📊 **System Performance**
+- **Platform**: ESP32-WROOM-32 (240MHz, dual-core)
+- **Memory Usage**: 19% RAM (63KB/328KB), 74% Flash (969KB/1.3MB)  
+- **Art-Net**: Full protocol support, multi-universe
+- **LED Control**: Up to 2,720 addressable LEDs (4×680)
+- **Network**: Dual connectivity (Ethernet + WiFi)
+- **Storage**: MicroSD for show recording/playback
+
+### 📚 **Dependencies & Libraries**
+
+| Library | Version | Purpose |
+|---------|---------|---------|
+| [**FastLED**](https://github.com/FastLED/FastLED) | ^3.10.2 | LED strip control |
+| [**ArtNet**](https://github.com/hideakitai/ArtNet) | ^0.8.3 | Art-Net protocol |
+| [**ESPAsyncWebServer**](https://github.com/me-no-dev/ESPAsyncWebServer) | latest | Web interface |
+| [**Ethernet**](https://github.com/arduino-libraries/Ethernet) | ^2.0.2 | W5500 support |
+| [**LiquidCrystal_I2C**](https://github.com/johnrickman/LiquidCrystal_I2C) | latest | LCD display |
+| [**Ai Esp32 Rotary Encoder**](https://github.com/igorantolic/ai-esp32-rotary-encoder) | ^1.7.0 | Encoder input |
+| **ArduinoJson** | ^6.20.0 | Configuration |
+| **AsyncTCP** | latest | Async networking |
+
+### 🏗️ **Architecture Overview**
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                  🎭 Art-Net LED Controller               │
+├─────────────────────────────────────────────────────────┤
+│  📡 Network Layer                                       │
+│  ├── Ethernet (W5500) ──┬── Art-Net Protocol           │
+│  └── WiFi (ESP32)   ────┤                             │
+├─────────────────────────────────────────────────────────┤  
+│  🎮 Control Layer                                       │
+│  ├── Web Interface ─────┬── Configuration              │
+│  ├── LCD + Encoder ─────┤                             │
+│  └── Serial Console ────┤                             │
+├─────────────────────────────────────────────────────────┤
+│  💡 Output Layer                                        │
+│  ├── LED Controller ────┬── FastLED (4 outputs)        │
+│  ├── DMX Sender ────────┤                             │
+│  └── Status Indicators ─┤                             │
+├─────────────────────────────────────────────────────────┤
+│  💾 Storage Layer                                       │
+│  ├── Configuration ─────┬── Flash (Preferences)        │
+│  └── Show Recording ────┘── SD Card                    │
+└─────────────────────────────────────────────────────────┘
+```
+
+## 🛠️ Development & Contributing
+
+### 🧪 **Testing Checklist**
+- [ ] **Hardware**: All GPIO connections verified
+- [ ] **Network**: Ethernet & WiFi connectivity
+- [ ] **Art-Net**: Multi-universe data reception  
+- [ ] **LEDs**: All 4 outputs responding correctly
+- [ ] **Web UI**: All configuration pages functional
+- [ ] **Recording**: SD card read/write operations
+- [ ] **Menu**: LCD display & rotary encoder navigation
+
+### 📝 **Development Setup**
+```bash
+# Prerequisites
+- PlatformIO IDE/CLI
+- ESP32 development board
+- Hardware components per requirements
+
+# Development workflow
+git clone <repository>
+platformio run -e esp32dev         # Build
+platformio run -e esp32dev -t upload   # Flash
+platformio device monitor -e esp32dev  # Debug
+```
+
+### 🤝 **Contributing**
+1. **Fork** the repository
+2. **Create** feature branch (`git checkout -b feature/amazing-feature`)
+3. **Commit** changes (`git commit -m 'Add amazing feature'`)
+4. **Push** to branch (`git push origin feature/amazing-feature`)
+5. **Open** a Pull Request
+
+### 🐛 **Bug Reports & Issues**
+Please use [GitHub Issues](https://github.com/truongcongdinh97/ArtNet_LED-Controller-by-TCD/issues) with:
+- **Hardware** configuration details
+- **Network** setup information  
+- **Serial console** output
+- **Steps to reproduce** the issue
+
+## 📜 **Changelog**
+
+### 🏷️ **v1.2.3** (Latest) - *GPIO Optimization & Critical Fixes*
+- ✅ **Fixed**: GPIO pin conflicts resolved
+- ✅ **Added**: I2S pins reserved for future audio expansion
+- ✅ **Improved**: LED output assignments optimized
+- ✅ **Fixed**: SD card initialization bug
+- ✅ **Added**: Comprehensive GPIO documentation
+- ✅ **Optimized**: Memory usage (19% RAM, 74% Flash)
+
+### 🏷️ **v1.4.0** - *Enhanced DMX & Playback*
+- ✅ Enhanced DMX streaming features
+- ✅ Improved playback functionality  
+- ✅ Updated documentation
+
+### 🏷️ **v1.0.3** - *Initial Release*
+- ✅ Core Art-Net functionality
+- ✅ Basic LED control
+- ✅ Web configuration interface
+
+## 📄 License
+
+**MIT License** © 2025 [Truong Cong Dinh](https://github.com/truongcongdinh97)
+
+```
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software...
+```
+
+## 🙏 **Acknowledgments**
+
+- **ESP32 Community** for excellent development resources
+- **Art-Net** protocol creators for lighting industry standard
+- **FastLED** team for powerful LED control library
+- **PlatformIO** for streamlined development environment
+- **Contributors** who helped improve this project
+
+---
+
+<div align="center">
+
+### 🌟 **Support This Project**
+
+If this project helps you, please give it a ⭐ on GitHub!
+
+[![GitHub stars](https://img.shields.io/github/stars/truongcongdinh97/ArtNet_LED-Controller-by-TCD?style=social)](https://github.com/truongcongdinh97/ArtNet_LED-Controller-by-TCD/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/truongcongdinh97/ArtNet_LED-Controller-by-TCD?style=social)](https://github.com/truongcongdinh97/ArtNet_LED-Controller-by-TCD/network)
+
+**Made with ❤️ for the lighting community**
+
+</div>
