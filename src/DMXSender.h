@@ -27,6 +27,8 @@ private:
     IPAddress _dmxReceiverIp;
     uint16_t _dmxPort = 6454; // Default ArtNet port
     uint16_t _packetRate;
+    unsigned long _lastSendTime = 0; // Last packet send time
+    uint16_t _sendIntervalMs = 33; // Time between packets (calculated from packetRate)
     uint8_t _artnetPacket[530]; // Buffer for the ArtNet packet (18 header + 512 data)
 };
 

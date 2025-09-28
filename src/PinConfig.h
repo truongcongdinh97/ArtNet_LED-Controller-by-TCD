@@ -20,7 +20,7 @@
 // Hỗ trợ tối đa 4 output, mỗi output có thể điều khiển 680 LED
 #define GPIO_LED_OUT_1   5
 #define GPIO_LED_OUT_2   14
-#define GPIO_LED_OUT_3   12  // Thay thế cho GPIO 27 (để dành cho I2S)
+#define GPIO_LED_OUT_3   16  // Thay đổi từ GPIO 12 (tránh boot voltage selector)
 #define GPIO_LED_OUT_4   13  // Thay thế cho GPIO 26 (để dành cho I2S)
 
 // LCD I2C (20x4 Character Display)
@@ -32,19 +32,19 @@
 // Cho phép điều khiển menu và chọn chế độ hoạt động
 #define GPIO_ROTARY_A    32  // Encoder channel A 
 #define GPIO_ROTARY_B    33  // Encoder channel B
-#define GPIO_ROTARY_BTN  4   // Encoder push button - Thay thế cho GPIO 25 (để dành cho I2S)
+#define GPIO_ROTARY_BTN  0   // Encoder push button - Thay đổi từ GPIO 4 (tối ưu hóa)
 
 // Status LED
 // LED đơn hiển thị trạng thái hoạt động (xanh=streaming, đỏ=recording, v.v.)
-#define GPIO_STATUS_LED  2
+#define GPIO_STATUS_LED  19  // Thay đổi từ GPIO 2 (tránh boot sensitive pin)
 
 // W5500 Ethernet Module (SPI Interface)
 // Kết nối mạng chính, ưu tiên cao hơn WiFi
 #define GPIO_W5500_MOSI  23  // SPI Master Out Slave In
 #define GPIO_W5500_MISO  19  // SPI Master In Slave Out  
 #define GPIO_W5500_SCK   18  // SPI Clock
-#define GPIO_W5500_CS    15  // Chip Select (riêng biệt)
-#define GPIO_W5500_RST   16  // Reset pin - Thay thế cho GPIO 12 (tránh xung đột)
+#define GPIO_W5500_CS    4   // Chip Select - Thay đổi từ GPIO 15 (tránh boot debug)
+#define GPIO_W5500_RST   2   // Reset pin - Thay đổi từ GPIO 16 (tối ưu hóa)
 
 // SD Card Module (SPI Interface)
 // Chia sẻ bus SPI với Ethernet, chỉ khác CS
@@ -54,29 +54,28 @@
 #define GPIO_SD_CS       17  // Chip Select riêng biệt cho SD Card
 
 // ================================================================================================
-// BẢNG TỔNG KẾT SỬ DỤNG GPIO
+// BẢNG TỔNG KẾT SỬ DỤNG GPIO - PHIÊN BẢN TỐI ƯU
 // ================================================================================================
 // GPIO  | Chức năng        | Module           | Lưu ý
 // ------|------------------|------------------|------------------------------------------
-// 2     | Status LED       | StatusLED        | LED hiển thị trạng thái
-// 4     | Button           | RotaryEncoder    | Nút nhấn encoder
-// 5     | LED Output 1     | FastLED          | WS2812B data pin
-// 12    | LED Output 3     | FastLED          | WS2812B data pin
-// 13    | LED Output 4     | FastLED          | WS2812B data pin  
-// 14    | LED Output 2     | FastLED          | WS2812B data pin
-// 15    | W5500 CS         | Ethernet         | SPI Chip Select
-// 16    | W5500 RST        | Ethernet         | Reset W5500
-// 17    | SD Card CS       | SD Manager       | SPI Chip Select
-// 18    | SPI SCK          | Ethernet + SD    | Chia sẻ SPI clock
-// 19    | SPI MISO         | Ethernet + SD    | Chia sẻ SPI MISO
-// 21    | I2C SDA          | LCD              | I2C data line
-// 22    | I2C SCL          | LCD              | I2C clock line
-// 23    | SPI MOSI         | Ethernet + SD    | Chia sẻ SPI MOSI
-// 25    | I2S LRCK         | MAX98357 (dự phòng) | Audio left/right
-// 26    | I2S BCLK         | MAX98357 (dự phòng) | Audio bit clock
-// 27    | I2S DATA         | MAX98357 (dự phòng) | Audio data out
-// 32    | Encoder A        | RotaryEncoder    | Channel A
-// 33    | Encoder B        | RotaryEncoder    | Channel B
+// 0     | Button           | RotaryEncoder    | Boot button (pullup) - Safe for input
+// 2     | W5500 RST        | Ethernet         | Reset control - Safe for output
+// 4     | W5500 CS         | Ethernet         | SPI Chip Select - Safe
+// 5     | LED Output 1     | FastLED          | WS2812B data pin - Optimal
+// 13    | LED Output 4     | FastLED          | WS2812B data pin - Safe
+// 14    | LED Output 2     | FastLED          | WS2812B data pin - Safe
+// 16    | LED Output 3     | FastLED          | WS2812B data pin - Safe (was PSRAM)
+// 17    | SD Card CS       | SD Manager       | SPI Chip Select - Safe
+// 18    | SPI SCK          | Ethernet + SD    | Hardware SPI clock - Optimal
+// 19    | Status LED       | StatusLED        | LED + SPI MISO shared - Acceptable
+// 21    | I2C SDA          | LCD              | Hardware I2C data - Optimal
+// 22    | I2C SCL          | LCD              | Hardware I2C clock - Optimal
+// 23    | SPI MOSI         | Ethernet + SD    | Hardware SPI MOSI - Optimal
+// 25    | I2S LRCK         | MAX98357 (dự phòng) | Audio left/right - Reserved
+// 26    | I2S BCLK         | MAX98357 (dự phòng) | Audio bit clock - Reserved
+// 27    | I2S DATA         | MAX98357 (dự phòng) | Audio data out - Reserved
+// 32    | Encoder A        | RotaryEncoder    | ADC capable - Good for encoder
+// 33    | Encoder B        | RotaryEncoder    | ADC capable - Good for encoder
 // ================================================================================================
 
 // Các module khác có thể bổ sung tại đây

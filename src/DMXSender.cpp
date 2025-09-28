@@ -4,10 +4,27 @@ void DMXSender::begin(UDP* udp, const IPAddress& dmxReceiverIp, uint16_t packetR
     _udp = udp; // Store the pointer to the active UDP object
     _dmxReceiverIp = dmxReceiverIp;
     _packetRate = packetRate;
+    
+    // Calculate send interval in milliseconds
+    if (packetRate > 0) {
+        _sendIntervalMs = 1000 / packetRate;
+    } else {
+        _sendIntervalMs = 33; // Default ~30fps
+    }
+    
+    Serial.printf("[DMXSender] Initialized - Target: %s, Rate: %u fps (%u ms interval)\n", 
+                  dmxReceiverIp.toString().c_str(), packetRate, _sendIntervalMs);
 }
 
 void DMXSender::sendPacket(uint16_t universe, const uint8_t* data, uint16_t length) {
     if (!_udp) return; // Don't send if UDP is not initialized
+
+    // Rate throttling: Check if enough time has passed since last send
+    unsigned long now = millis();
+    if (now - _lastSendTime < _sendIntervalMs) {
+        return; // Skip this packet to maintain the target rate
+    }
+    _lastSendTime = now;
 
     // Art-Net packet structure
     // Header (18 bytes)

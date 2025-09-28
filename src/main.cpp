@@ -67,17 +67,36 @@ void loop() {
     }
 
     if (currentMode != lastMode) {
+        // Clear previous subscriptions to avoid conflicts
+        if (lastMode == MODE_RECORDING || lastMode == MODE_STREAMING) {
+            // Note: ArtnetWiFi doesn't have unsubscribe, so we handle this by mode checking
+        }
+        
         if (currentMode == MODE_RECORDING) {
+            Serial.println("[Main] Entering RECORDING mode");
             artnet.subscribeArtDmx([](const uint8_t* data,
                                       uint16_t size,
                                       const ArtDmxMetadata& metadata,
                                       const ArtNetRemoteInfo&) {
                 Recording::recordPacket(metadata.universe, size, data);
             });
+        } else if (currentMode == MODE_STREAMING) {
+            Serial.println("[Main] Entering STREAMING mode");
+            artnet.subscribeArtDmx([](const uint8_t* data,
+                                      uint16_t size,
+                                      const ArtDmxMetadata& metadata,
+                                      const ArtNetRemoteInfo&) {
+                // Forward to DMX sender and update LEDs
+                dmxSender.sendPacket(metadata.universe, data, size);
+                LEDController::updateFromArtnet(metadata.universe, size, data);
+            });
         }
+        
         if (currentMode != MODE_PLAYBACK && lastMode == MODE_PLAYBACK) {
+            Serial.println("[Main] Stopping PLAYBACK mode");
             PlaybackController::stop();
         }
+        
         lastMode = currentMode;
     }
 }

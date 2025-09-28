@@ -89,11 +89,16 @@ void PlaybackController::handlePlayback() {
         return;
     }
 
+    Config cfg = ConfigManager::getConfig();
+    
+    // Use configured packet rate instead of fixed 30fps
+    uint16_t targetRate = cfg.dmxPacketRate > 0 ? cfg.dmxPacketRate : 30;
+    uint16_t frameInterval = 1000 / targetRate;
+    
     unsigned long now = millis();
-    if (now - lastFrameTime >= 33) { // ~30 FPS
+    if (now - lastFrameTime >= frameInterval) {
         lastFrameTime = now;
 
-        Config cfg = ConfigManager::getConfig();
         bool fileEnded = false;
 
         // In one "frame", process N universes worth of data from the file
@@ -122,7 +127,7 @@ void PlaybackController::handlePlayback() {
             }
             SDManager::readData(frameData, length);
 
-            // 1. Send packet to the DMX target IP
+            // 1. Send packet to the DMX target IP (with rate throttling)
             dmxSender.sendPacket(universe, frameData, length);
 
             // 2. Update local LEDs
